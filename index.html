@@ -1,7 +1,7 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>bubble pop extreme!! ✨</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23ff6b9d'/><circle cx='35' cy='35' r='8' fill='%23ffffff' opacity='0.6'/></svg>" />
@@ -460,6 +460,7 @@ joyBase.addEventListener('pointercancel', (e) => {
   if(e.pointerId === joyId) { joyActive=false; resetKnob(); } 
 });
 
+// Update keyboard/button states regularly
 setInterval(()=>{ 
   keys.left = leftHeld || keys.left; 
   keys.right = rightHeld || keys.right; 
@@ -596,7 +597,7 @@ function showStartScreen(){
     <h2>hey ${state.username}!! ✨</h2>
     <p style="margin:8px 0;">ready to pop some bubbles?!</p>
     <div style="margin:12px 0; font-size:13px; text-align:left; background:rgba(0,0,0,0.15); padding:10px; border-radius:10px;">
-      💡 tap bubbles fast for combos!!<br>
+      💡 use ${window.innerWidth > 900 ? 'A/D or Arrow Keys' : 'the joystick'} to move sideways.<br>
       ⭐ grab power-ups for bonuses!!<br>
       ⚠️ AVOID obstacles or lose lives!!<br>
       📈 game gets harder every level!!
@@ -659,11 +660,20 @@ function loop(ts){
 function update(dt){
   const now = performance.now();
   
+  // Player movement update (FIXED):
   let moveDir = 0;
   if(keys.left) moveDir -= 1;
   if(keys.right) moveDir += 1;
-  if(moveDir !== 0) player.vx = player.speed * moveDir;
-  else { player.vx *= 0.88; if(Math.abs(player.vx) < 2) player.vx = 0; }
+  
+  if(moveDir !== 0) {
+    player.vx = player.speed * moveDir;
+  } else { 
+    // Decelerate if no keys are pressed AND joystick is not active
+    if (!joyActive) {
+        player.vx *= 0.88;
+        if(Math.abs(player.vx) < 2) player.vx = 0;
+    }
+  }
   
   player.x += player.vx * dt;
   player.x = clamp(player.x, player.w/2, window.innerWidth - player.w/2);
@@ -994,6 +1004,11 @@ function adaptUI(){
     mobileControls.style.display='flex'; 
     joystick.style.display='flex'; 
   } 
+  // Update start screen instructions based on device
+  const startModal = document.querySelector('#modal h2');
+  if(startModal && startModal.textContent.includes('hey')) {
+     showStartScreen(); 
+  }
 }
 window.addEventListener('resize', adaptUI); 
 adaptUI();
