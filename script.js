@@ -1,8 +1,12 @@
 // --- CORRECTED PLAYER IMAGE LOADING AND STATE ---
 const playerImage = new Image();
 playerImage.src = 'chiikawa.webp';
+playerImage.onerror = () => console.log('Failed to load player image');
+
 const playerActionImage = new Image();
 playerActionImage.src = 'output-onlinepngtools (12).png';
+playerActionImage.onerror = () => console.log('Failed to load action image');
+
 let isPlayerAction = false; 
 
 const rand = (a,b) => a + Math.random()*(b-a);
@@ -601,23 +605,26 @@ function update(dt){
         spawnParticles(it.x,it.y,it.color,15); 
         playBeep(800 + state.combo * 100, 0.06,'square',0.12); 
         
-        // **FIX 1: Action flag set and reset (150ms flash)**
+        // Action flag set and reset (150ms flash)
         isPlayerAction = true;
         setTimeout(() => { isPlayerAction = false; }, 150);
         
         clearTimeout(comboTimer);
         comboTimer = setTimeout(()=>{ state.combo = 0; updateUI(); }, 1500);
         
-        // **FIX 2: Corrected Level-Up Check**
-        // A simple progression: requires 250 * current level to advance
-        const levelGoal = 250 * state.level;
-        if(state.score >= levelGoal) nextLevel();
+        // FIXED: Level progression based on score milestones
+        const scoreMilestones = [250, 600, 1200, 2000, 3000, 4200, 5600, 7200, 9000, 11000];
+        const nextMilestone = scoreMilestones[state.level - 1] || Infinity;
+        
+        if(state.score >= nextMilestone) {
+          nextLevel();
+        }
       }
       else if(it.type==='power'){ 
         applyPower(it.subtype); 
         spawnParticles(it.x,it.y,'#FFD700',18);
 
-        // **FIX 1: Action flag set and reset for power-ups**
+        // Action flag set and reset for power-ups
         isPlayerAction = true;
         setTimeout(() => { isPlayerAction = false; }, 150);
       }
@@ -697,14 +704,12 @@ function drawPlayer(){
   const currentImage = isPlayerAction ? playerActionImage : playerImage;
 
   // Draw the image centered on the player's position
-  // Adjust width/height as needed for scale. player.w/player.h are currently 80.
-  // We'll scale it slightly to fit the original player size.
   const scale = player.w / currentImage.width;
   const drawWidth = currentImage.width * scale;
   const drawHeight = currentImage.height * scale;
 
   // Ensure image is loaded before drawing
-  if (currentImage.complete) {
+  if (currentImage.complete && currentImage.naturalHeight !== 0) {
     ctx.drawImage(currentImage, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
   } else {
     // Fallback if image not loaded (using original simple drawing logic)
@@ -761,7 +766,6 @@ function drawPlayer(){
     ctx.stroke();
   }
 }
-// --- END CORRECTED drawPlayer FUNCTION ---
 
 function drawItems(){
   for(const it of items){
