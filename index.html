@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>bubble pop extreme!! ✨</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23ff6b9d'/><circle cx='35' cy='35' r='8' fill='%23ffffff' opacity='0.6'/></svg>" />
-<style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>bubble pop extreme!! ✨</title>
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;circle cx='50' cy='50' r='45' fill='%23ff6b9d'/&gt;&lt;circle cx='35' cy='35' r='8' fill='%23ffffff' opacity='0.6'/&gt;&lt;/svg&gt;">
+  <style>
   :root{ --bg:#ff6b9d; --panel:#ffffff22; --accent:#ffd86b; --muted:rgba(255,255,255,0.85); }
   html,body{ height:100%; margin:0; background: linear-gradient(180deg,#ff6b9d 0%, #c44569 60%, #a29bfe 100%); font-family:'Comic Sans MS',cursive,system-ui; color:white; -webkit-user-select:none; user-select:none; overflow:hidden; font-size:16px;}
   #gameWrap{ position:relative; width:100%; height:100vh; display:flex; align-items:stretch; justify-content:center; }
@@ -67,68 +67,65 @@
   #username::placeholder{ color:rgba(255,255,255,0.6); }
   .star-particle{ position:absolute; pointer-events:none; animation:float-up 2s ease-out forwards; z-index:100; }
   @keyframes float-up{ 0%{opacity:1; transform:translateY(0) scale(1);} 100%{opacity:0; transform:translateY(-100px) scale(0.3);} }
-</style>
+  </style>
 </head>
 <body>
-<div id="gameWrap">
-  <canvas id="gameCanvas"></canvas>
-  <audio id="gameMusic" src="stargame.mp3" loop preload="auto"></audio>
-
-  <div id="hud">
-    <div class="panel">
-      score: <span id="score">0</span> | <span id="livesDisplay">❤️❤️❤️</span>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <div class="panel">level: <span id="level">1</span></div>
-      <div class="panel">high: <span id="high">0</span></div>
-      <div class="panel topRightControls">
-        <label>sfx <input id="toggleSound" type="checkbox" checked></label>
-        <label>music <input id="toggleMusic" type="checkbox" checked></label>
+  <div id="gameWrap">
+    <canvas id="gameCanvas"></canvas><audio id="gameMusic" src="stargame.mp3" loop="" preload="auto"></audio>
+    <div id="hud">
+      <div class="panel">
+        score: <span id="score">0</span> | <span id="livesDisplay">❤️❤️❤️</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="panel">
+          level: <span id="level">1</span>
+        </div>
+        <div class="panel">
+          high: <span id="high">0</span>
+        </div>
+        <div class="panel topRightControls">
+          <label>sfx <input id="toggleSound" type="checkbox" checked></label> <label>music <input id="toggleMusic" type="checkbox" checked></label>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div id="controlsMobile">
-    <div id="leftGroup">
-      <button id="btnLeft" class="btn">◀</button>
-      <button id="btnRight" class="btn">▶</button>
+    <div id="controlsMobile">
+      <div id="leftGroup">
+        <button id="btnLeft" class="btn">◀</button> <button id="btnRight" class="btn">▶</button>
+      </div>
+      <div id="rightGroup">
+        <button id="btnAction" class="btn">🎯</button>
+      </div>
     </div>
-    <div id="rightGroup">
-      <button id="btnAction" class="btn">🎯</button>
+    <div class="joystick" id="joystick">
+      <div class="joy-base" id="joyBase">
+        <div class="joy-knob" id="joyKnob"></div>
+      </div>
+    </div>
+    <div id="modal">
+      <h2 id="modalTitle">game over!! 💖</h2>
+      <div id="modalText">
+        final score: <strong id="modalScore">0</strong>
+      </div>
+      <div id="leader"></div><button id="btnRestart">play again!! ✨</button>
     </div>
   </div>
+  <script>
+  // --- CORRECTED PLAYER IMAGE LOADING AND STATE ---
+  const playerImage = new Image();
+  playerImage.src = 'chiikawa.webp';
+  const playerActionImage = new Image();
+  playerActionImage.src = 'output-onlinepngtools (12).png';
+  let isPlayerAction = false; 
 
-  <div class="joystick" id="joystick">
-    <div class="joy-base" id="joyBase">
-      <div class="joy-knob" id="joyKnob"></div>
-    </div>
-  </div>
+  const rand = (a,b) => a + Math.random()*(b-a);
+  const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
 
-  <div id="modal">
-    <h2 id="modalTitle">game over!! 💖</h2>
-    <div id="modalText">final score: <strong id="modalScore">0</strong></div>
-    <div id="leader"></div>
-    <button id="btnRestart">play again!! ✨</button>
-  </div>
-</div>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d', { alpha: true });
+  let DPR = Math.max(1, window.devicePixelRatio || 1);
 
-<script>
-// --- CORRECTED PLAYER IMAGE LOADING AND STATE ---
-const playerImage = new Image();
-playerImage.src = 'chiikawa.webp';
-const playerActionImage = new Image();
-playerActionImage.src = 'output-onlinepngtools (12).png';
-let isPlayerAction = false; 
-
-const rand = (a,b) => a + Math.random()*(b-a);
-const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
-const pick = arr => arr[Math.floor(Math.random()*arr.length)];
-
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d', { alpha: true });
-let DPR = Math.max(1, window.devicePixelRatio || 1);
-
-function resize(){
+  function resize(){
   const w = window.innerWidth;
   const h = window.innerHeight;
   canvas.style.width = w + 'px';
@@ -136,28 +133,28 @@ function resize(){
   canvas.width = Math.floor(w * DPR);
   canvas.height = Math.floor(h * DPR);
   ctx.setTransform(DPR,0,0,DPR,0,0);
-}
-window.addEventListener('resize', resize);
-resize();
+  }
+  window.addEventListener('resize', resize);
+  resize();
 
-let state = {
+  let state = {
   score:0, lives:3, level:1, running:false, paused:false, high:0, sound:true, music:true,
   username:'', hasUsername:false, combo:0, doublePoints:false, freezeTime:false
-};
+  };
 
-let gameData = {
+  let gameData = {
   leaderboard: [],
   lastCombo: 0
-};
+  };
 
-// Helper function to get the High Score from the leaderboard
-function getHighScore(leaderboard) {
+  // Helper function to get the High Score from the leaderboard
+  function getHighScore(leaderboard) {
     if (leaderboard.length === 0) return 0;
     return leaderboard.reduce((max, item) => Math.max(max, item.score), 0);
-}
+  }
 
-// Function to load username (using localStorage)
-function loadUsername(){
+  // Function to load username (using localStorage)
+  function loadUsername(){
   try{
     const name = localStorage.getItem('bubble_username');
     if(name){
@@ -174,10 +171,10 @@ function loadUsername(){
     loadLeaderboard();
     showUsernameScreen();
   }
-}
+  }
 
-// Function to save username (using localStorage)
-function saveUsername(name){
+  // Function to save username (using localStorage)
+  function saveUsername(name){
   try{
     localStorage.setItem('bubble_username', name);
     state.username = name;
@@ -186,10 +183,10 @@ function saveUsername(name){
   }catch(err){
     console.error('Failed to save username to localStorage:', err);
   }
-}
+  }
 
-// Function to load leaderboard (using localStorage)
-function loadLeaderboard(){
+  // Function to load leaderboard (using localStorage)
+  function loadLeaderboard(){
   try{
     const scoresJSON = localStorage.getItem('bubble_leaderboard');
     if(scoresJSON){
@@ -205,10 +202,10 @@ function loadLeaderboard(){
     gameData.leaderboard = [];
     updateHighDisplay();
   }
-}
+  }
 
-// Function to save score (using localStorage)
-function saveScore(finalScore){
+  // Function to save score (using localStorage)
+  function saveScore(finalScore){
   if(!state.username || finalScore === 0) return;
   try{
     const scoreData = {
@@ -231,22 +228,22 @@ function saveScore(finalScore){
   }catch(err){
     console.error('Failed to save score to localStorage:', err);
   }
-}
+  }
 
-function updateHighDisplay(){
+  function updateHighDisplay(){
   state.high = getHighScore(gameData.leaderboard);
   document.getElementById('high').textContent = state.high;
-}
+  }
 
-// Music functions using the <audio> element
-const gameMusic = document.getElementById('gameMusic');
-let audioCtx = null; // Keep Web Audio for SFX
+  // Music functions using the <audio> element
+  const gameMusic = document.getElementById('gameMusic');
+  let audioCtx = null; // Keep Web Audio for SFX
 
-function ensureAudio(){ 
+  function ensureAudio(){ 
   if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); 
-}
+  }
 
-function startMusic(){
+  function startMusic(){
   if(!state.music) return;
   try{
     gameMusic.volume = 0.3; // Set a low volume
@@ -254,32 +251,32 @@ function startMusic(){
   } catch(e) {
     console.log('Music play failed (user interaction required):', e);
   }
-}
+  }
 
-function stopMusic(){
+  function stopMusic(){
   gameMusic.pause();
-}
+  }
 
-function tryResumeAudio(){
+  function tryResumeAudio(){
   try{
     if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     if(state.music) startMusic();
   }catch(e){}
-}
+  }
 
-window.addEventListener('touchstart', tryResumeAudio, {once:true});
-window.addEventListener('mousedown', tryResumeAudio, {once:true});
+  window.addEventListener('touchstart', tryResumeAudio, {once:true});
+  window.addEventListener('mousedown', tryResumeAudio, {once:true});
 
-const player = { x: window.innerWidth/2, y: window.innerHeight - 90, w:80, h:80, speed:450, vx:0 };
-const items = [];
-const particles = [];
-const obstacles = [];
-let lastSpawn = 0, spawnInterval = 800, lastObstacleSpawn = 0, obstacleInterval = 2000;
-let lastTime = performance.now();
-let comboTimer = null, freezeTimer = null, doubleTimer = null;
+  const player = { x: window.innerWidth/2, y: window.innerHeight - 90, w:80, h:80, speed:450, vx:0 };
+  const items = [];
+  const particles = [];
+  const obstacles = [];
+  let lastSpawn = 0, spawnInterval = 800, lastObstacleSpawn = 0, obstacleInterval = 2000;
+  let lastTime = performance.now();
+  let comboTimer = null, freezeTimer = null, doubleTimer = null;
 
 
-function playBeep(freq=440, dur=0.08, type='sine', vol=0.15){
+  function playBeep(freq=440, dur=0.08, type='sine', vol=0.15){
   if(!state.sound) return;
   ensureAudio();
   try{
@@ -294,25 +291,25 @@ function playBeep(freq=440, dur=0.08, type='sine', vol=0.15){
   }catch(e){
     console.log('audio error');
   }
-}
+  }
 
 
-const soundToggle = document.getElementById('toggleSound');
-soundToggle.addEventListener('change', ()=>{ 
+  const soundToggle = document.getElementById('toggleSound');
+  soundToggle.addEventListener('change', ()=>{ 
   state.sound = soundToggle.checked; 
   if(state.sound) playBeep(600, 0.05);
-});
+  });
 
-const musicToggle = document.getElementById('toggleMusic');
-musicToggle.addEventListener('change', ()=>{
+  const musicToggle = document.getElementById('toggleMusic');
+  musicToggle.addEventListener('change', ()=>{
   state.music = musicToggle.checked;
   if(state.music){
     tryResumeAudio();
     startMusic();
   } else stopMusic();
-});
+  });
 
-function spawnBubble(){
+  function spawnBubble(){
   const w = window.innerWidth;
   const x = rand(40, w-40);
   const speedMult = 1 + (state.level - 1) * 0.25;
@@ -327,9 +324,9 @@ function spawnBubble(){
     angle: Math.random()*Math.PI*2,
     rotSpeed: rand(-0.04,0.04)
   });
-}
+  }
 
-function spawnPowerUp(){
+  function spawnPowerUp(){
   const w = window.innerWidth;
   const types = ['freeze','double','bonus'];
   items.push({
@@ -343,9 +340,9 @@ function spawnPowerUp(){
     angle: 0,
     rotSpeed: 0.05
   });
-}
+  }
 
-function spawnObstacle(){
+  function spawnObstacle(){
   const w = window.innerWidth;
   const types = ['spike','bomb','laser'];
   const type = pick(types);
@@ -360,9 +357,9 @@ function spawnObstacle(){
     angle: Math.random()*Math.PI*2,
     rotSpeed: rand(-0.03,0.03)
   });
-}
+  }
 
-function spawnParticles(x,y,color,count=12){
+  function spawnParticles(x,y,color,count=12){
   for(let i=0;i<count;i++){
     particles.push({ 
       x, y, 
@@ -375,7 +372,7 @@ function spawnParticles(x,y,color,count=12){
       alpha:1 
     });
   }
-  
+
   const starDiv = document.createElement('div');
   starDiv.className = 'star-particle';
   starDiv.textContent = '✨';
@@ -385,50 +382,50 @@ function spawnParticles(x,y,color,count=12){
   starDiv.style.position = 'absolute';
   document.body.appendChild(starDiv);
   setTimeout(() => starDiv.remove(), 2000);
-}
+  }
 
-function clampCollision(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  function clampCollision(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
-const keys = {};
-window.addEventListener('keydown', e=>{
+  const keys = {};
+  window.addEventListener('keydown', e=>{
   if(e.key==='ArrowLeft'||e.key==='a') keys.left=true;
   if(e.key==='ArrowRight'||e.key==='d') keys.right=true;
   if(e.key===' '||e.key==='ArrowUp') keys.action=true;
-});
-window.addEventListener('keyup', e=>{
+  });
+  window.addEventListener('keyup', e=>{
   if(e.key==='ArrowLeft'||e.key==='a') keys.left=false;
   if(e.key==='ArrowRight'||e.key==='d') keys.right=false;
   if(e.key===' '||e.key==='ArrowUp') keys.action=false;
-});
+  });
 
-const btnLeft = document.getElementById('btnLeft');
-const btnRight = document.getElementById('btnRight');
-const btnAction = document.getElementById('btnAction');
-let leftHeld=false,rightHeld=false,actionHeld=false;
+  const btnLeft = document.getElementById('btnLeft');
+  const btnRight = document.getElementById('btnRight');
+  const btnAction = document.getElementById('btnAction');
+  let leftHeld=false,rightHeld=false,actionHeld=false;
 
-['touchstart','mousedown'].forEach(ev=>{
+  ['touchstart','mousedown'].forEach(ev=>{
   btnLeft.addEventListener(ev,(e)=>{ e.preventDefault(); leftHeld=true; tryResumeAudio(); }, {passive:false});
   btnRight.addEventListener(ev,(e)=>{ e.preventDefault(); rightHeld=true; tryResumeAudio(); }, {passive:false});
   btnAction.addEventListener(ev,(e)=>{ e.preventDefault(); actionHeld=true; tryResumeAudio(); }, {passive:false});
-});
-['touchend','mouseup','touchcancel','mouseleave'].forEach(ev=>{
+  });
+  ['touchend','mouseup','touchcancel','mouseleave'].forEach(ev=>{
   btnLeft.addEventListener(ev, ()=>{ leftHeld=false; }, {passive:true});
   btnRight.addEventListener(ev, ()=>{ rightHeld=false; }, {passive:true});
   btnAction.addEventListener(ev, ()=>{ actionHeld=false; }, {passive:true});
-});
+  });
 
-const joyBase = document.getElementById('joyBase');
-const joyKnob = document.getElementById('joyKnob');
-let joyActive=false, joyCenter={x:0,y:0}, joyId=null;
+  const joyBase = document.getElementById('joyBase');
+  const joyKnob = document.getElementById('joyKnob');
+  let joyActive=false, joyCenter={x:0,y:0}, joyId=null;
 
-function initJoystick(){
+  function initJoystick(){
   const rect = joyBase.getBoundingClientRect();
   joyCenter = { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
-}
-initJoystick();
-window.addEventListener('resize', initJoystick);
+  }
+  initJoystick();
+  window.addEventListener('resize', initJoystick);
 
-function setKnobPos(x,y){
+  function setKnobPos(x,y){
   const rect = joyBase.getBoundingClientRect();
   const cx = rect.left + rect.width/2;
   const cy = rect.top + rect.height/2;
@@ -442,57 +439,57 @@ function setKnobPos(x,y){
   if(nx < -0.25) { keys.left = true; keys.right = false; } 
   else if(nx > 0.25) { keys.right = true; keys.left = false; } 
   else { keys.left = keys.right = false; }
-}
+  }
 
-function resetKnob(){ 
+  function resetKnob(){ 
   joyKnob.style.transform = 'translate(0,0)'; 
   keys.left = false; 
   keys.right = false; 
-}
+  }
 
-joyBase.addEventListener('pointerdown', (e)=>{
+  joyBase.addEventListener('pointerdown', (e)=>{
   joyActive=true; joyId=e.pointerId; joyBase.setPointerCapture(joyId);
   setKnobPos(e.clientX, e.clientY);
   tryResumeAudio();
-});
-joyBase.addEventListener('pointermove', (e)=>{
+  });
+  joyBase.addEventListener('pointermove', (e)=>{
   if(!joyActive || e.pointerId !== joyId) return;
   setKnobPos(e.clientX, e.clientY);
-});
-joyBase.addEventListener('pointerup', (e)=>{
+  });
+  joyBase.addEventListener('pointerup', (e)=>{
   if(e.pointerId !== joyId) return;
   joyActive=false; joyBase.releasePointerCapture(joyId); resetKnob();
-});
-joyBase.addEventListener('pointercancel', (e) => { 
+  });
+  joyBase.addEventListener('pointercancel', (e) => { 
   if(e.pointerId === joyId) { joyActive=false; resetKnob(); } 
-});
+  });
 
-// Update keyboard/button states regularly
-setInterval(()=>{ 
+  // Update keyboard/button states regularly
+  setInterval(()=>{ 
   keys.left = leftHeld || keys.left; 
   keys.right = rightHeld || keys.right; 
   keys.action = actionHeld || keys.action; 
-}, 30);
+  }, 30);
 
-function nextLevel(){ 
+  function nextLevel(){ 
   state.level++; 
   spawnInterval = Math.max(400, 800 - (state.level-1)*60); 
   obstacleInterval = Math.max(1200, 2000 - (state.level-1)*100);
   playBeep(1200,0.14,'triangle',0.2); 
   spawnParticles(player.x, player.y-20, '#74ffb9', 30); 
   updateUI(); 
-}
+  }
 
-function loseLife(){ 
+  function loseLife(){ 
   state.lives--; 
   state.combo = 0;
   playBeep(180,0.25,'sawtooth',0.28); 
   spawnParticles(player.x, player.y-10, '#ff0000', 24); 
   if(state.lives <= 0) gameOver(); 
   updateUI(); 
-}
+  }
 
-function applyPower(name){
+  function applyPower(name){
   if(name==='freeze'){ 
     state.freezeTime=true; 
     clearTimeout(freezeTimer);
@@ -510,20 +507,20 @@ function applyPower(name){
     playBeep(950,0.12,'triangle',0.18);
   }
   updateUI();
-}
+  }
 
-function updateUI(){ 
+  function updateUI(){ 
   document.getElementById('score').textContent = state.score; 
   const hearts = '❤️'.repeat(state.lives);
   const empty = '🖤'.repeat(Math.max(0, 3-state.lives));
   document.getElementById('livesDisplay').innerHTML = hearts + empty;
   document.getElementById('level').textContent = state.level; 
   document.getElementById('high').textContent = state.high;
-}
+  }
 
-const modal = document.getElementById('modal');
+  const modal = document.getElementById('modal');
 
-function gameOver(){
+  function gameOver(){
   state.running = false;
   stopMusic();
   playBeep(200, 0.5, 'sine', 0.2);
@@ -531,14 +528,14 @@ function gameOver(){
   modal.style.display = 'block';
   saveScore(state.score);
   renderLeader();
-}
+  }
 
-document.getElementById('btnRestart').addEventListener('click', ()=>{ 
+  document.getElementById('btnRestart').addEventListener('click', ()=>{ 
   modal.style.display='none'; 
   resetGame(); 
-});
+  });
 
-function renderLeader(){
+  function renderLeader(){
   const el = document.getElementById('leader');
   el.innerHTML = '<strong>🏆 top scores!! 🏆</strong><br>';
   if(gameData.leaderboard.length === 0){
@@ -549,9 +546,9 @@ function renderLeader(){
       el.innerHTML += `${medal} ${it.username} — ${it.score} (lvl ${it.level})<br>`; 
     });
   }
-}
+  }
 
-function resetGame(){
+  function resetGame(){
   items.length = 0; 
   particles.length = 0;
   obstacles.length = 0;
@@ -572,9 +569,9 @@ function resetGame(){
   tryResumeAudio();
   lastTime = performance.now();
   loop(lastTime);
-}
+  }
 
-function showUsernameScreen(){
+  function showUsernameScreen(){
   modal.innerHTML = `
     <h2>bubble pop!! ✨</h2>
     <p style="margin:8px 0;">enter ur name to start!!</p>
@@ -582,24 +579,24 @@ function showUsernameScreen(){
     <button id="btnSubmitName">let's go!! 💖</button>
   `;
   modal.style.display = 'block';
-  
+
   const submitBtn = document.getElementById('btnSubmitName');
   const usernameInput = document.getElementById('username');
-  
+
   submitBtn.addEventListener('click', ()=>{
     const name = usernameInput.value.trim();
     if(name) saveUsername(name);
   });
-  
+
   usernameInput.addEventListener('keypress', (e)=>{
     if(e.key === 'Enter'){
       const name = usernameInput.value.trim();
       if(name) saveUsername(name);
     }
   });
-}
+  }
 
-function showStartScreen(){
+  function showStartScreen(){
   modal.innerHTML = `
     <h2>hey ${state.username}!! ✨</h2>
     <p style="margin:8px 0;">ready to pop some bubbles?!</p>
@@ -613,12 +610,12 @@ function showStartScreen(){
     <button id="btnShowLeader" style="margin-top:8px; background:linear-gradient(135deg, #74B9FF, #A29BFE);">leaderboard 🏆</button>
   `;
   modal.style.display = 'block';
-  
+
   document.getElementById('btnStart').addEventListener('click', ()=>{
     modal.style.display = 'none';
     resetGame();
   });
-  
+
   document.getElementById('btnShowLeader').addEventListener('click', ()=>{
     modal.innerHTML = `
       <h2>🏆 leaderboard 🏆</h2>
@@ -638,17 +635,17 @@ function showStartScreen(){
     
     document.getElementById('btnBackToStart').addEventListener('click', showStartScreen);
   });
-}
+  }
 
-function loop(ts){
+  function loop(ts){
   if(!lastTime) lastTime = ts;
   const dt = Math.min(60, ts - lastTime)/1000;
   lastTime = ts;
-  
+
   if(!state.running){
     return;
   }
-  
+
   if(!state.paused){ 
     update(dt); 
     render(); 
@@ -662,16 +659,16 @@ function loop(ts){
     ctx.fillText('paused!! ⏸️', window.innerWidth/2, window.innerHeight/2);
   }
   requestAnimationFrame(loop);
-}
+  }
 
-function update(dt){
+  function update(dt){
   const now = performance.now();
-  
+
   // Player movement update:
   let moveDir = 0;
   if(keys.left) moveDir -= 1;
   if(keys.right) moveDir += 1;
-  
+
   if(moveDir !== 0) {
     player.vx = player.speed * moveDir;
   } else { 
@@ -681,23 +678,23 @@ function update(dt){
         if(Math.abs(player.vx) < 2) player.vx = 0;
     }
   }
-  
+
   player.x += player.vx * dt;
   player.x = clamp(player.x, player.w/2, window.innerWidth - player.w/2);
   player.y = window.innerHeight - 90;
-  
+
   if(!state.freezeTime && now - lastSpawn > spawnInterval){ 
     // Increased power-up spawn probability to make them more common
     if(Math.random() > 0.8) spawnPowerUp();
     else spawnBubble(); 
     lastSpawn = now; 
   }
-  
+
   if(!state.freezeTime && now - lastObstacleSpawn > obstacleInterval){
     spawnObstacle();
     lastObstacleSpawn = now;
   }
-  
+
   for(let i=items.length-1;i>=0;i--){
     const it = items[i];
     if(!state.freezeTime) it.y += it.vy * dt;
@@ -748,7 +745,7 @@ function update(dt){
       items.splice(i,1); 
     }
   }
-  
+
   for(let i=obstacles.length-1;i>=0;i--){
     const ob = obstacles[i];
     if(!state.freezeTime) ob.y += ob.vy * dt;
@@ -769,7 +766,7 @@ function update(dt){
       obstacles.splice(i,1); 
     }
   }
-  
+
   for(let i=particles.length-1;i>=0;i--){
     const p = particles[i]; 
     const age = performance.now() - p.born;
@@ -783,16 +780,16 @@ function update(dt){
     p.y += p.vy * dt; 
     p.alpha = 1 - t;
   }
-}
+  }
 
-function clear(){
+  function clear(){
   ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
   const grd = ctx.createLinearGradient(0,0,0,window.innerHeight);
   grd.addColorStop(0,'rgba(255,107,157,0.3)'); 
   grd.addColorStop(1,'rgba(162,155,254,0.2)');
   ctx.fillStyle = grd; 
   ctx.fillRect(0,0,window.innerWidth,window.innerHeight);
-  
+
   for(let i=0;i<40;i++){ 
     ctx.globalAlpha = 0.03 + (i%8)*0.008; 
     const sx = (i*123 + (performance.now()/50 % window.innerWidth)) % window.innerWidth; 
@@ -801,10 +798,10 @@ function clear(){
     ctx.fillRect(sx, sy, 2, 2); 
   }
   ctx.globalAlpha = 1;
-}
+  }
 
-// --- CORRECTED drawPlayer FUNCTION ---
-function drawPlayer(){
+  // --- CORRECTED drawPlayer FUNCTION ---
+  function drawPlayer(){
   ctx.save();
   ctx.translate(player.x, player.y);
 
@@ -859,7 +856,7 @@ function drawPlayer(){
   }
 
   ctx.restore();
-  
+
   // Draw power-up effects (outside of translation/rotation block)
   if(state.freezeTime){ 
     ctx.beginPath(); 
@@ -875,10 +872,10 @@ function drawPlayer(){
     ctx.arc(player.x, player.y, player.w/2 + 14, 0, Math.PI*2); 
     ctx.stroke();
   }
-}
-// --- END CORRECTED drawPlayer FUNCTION ---
+  }
+  // --- END CORRECTED drawPlayer FUNCTION ---
 
-function drawItems(){
+  function drawItems(){
   for(const it of items){
     ctx.save(); 
     ctx.translate(it.x, it.y); 
@@ -931,9 +928,9 @@ function drawItems(){
     }
     ctx.restore();
   }
-}
+  }
 
-function drawObstacles(){
+  function drawObstacles(){
   for(const ob of obstacles){
     ctx.save();
     ctx.translate(ob.x, ob.y);
@@ -988,9 +985,9 @@ function drawObstacles(){
     }
     ctx.restore();
   }
-}
+  }
 
-function drawParticles(){ 
+  function drawParticles(){ 
   for(const p of particles){ 
     ctx.globalAlpha = p.alpha || 1; 
     ctx.fillStyle = p.color; 
@@ -999,9 +996,9 @@ function drawParticles(){
     ctx.fill(); 
   } 
   ctx.globalAlpha = 1; 
-}
+  }
 
-function drawCombo(){
+  function drawCombo(){
   if(state.combo > 0){
     ctx.save();
     ctx.font = 'bold 24px Comic Sans MS';
@@ -1014,24 +1011,24 @@ function drawCombo(){
     ctx.fillText(text, window.innerWidth/2, 80);
     ctx.restore();
   }
-}
+  }
 
-function render(){ 
+  function render(){ 
   clear(); 
   drawItems(); 
   drawObstacles();
   drawPlayer(); 
   drawParticles();
   drawCombo();
-}
+  }
 
-loadUsername();
+  loadUsername();
 
-document.addEventListener('visibilitychange', ()=>{ 
+  document.addEventListener('visibilitychange', ()=>{ 
   if(document.hidden && state.running) state.paused = true; 
-});
+  });
 
-function adaptUI(){ 
+  function adaptUI(){ 
   const mobileControls = document.getElementById('controlsMobile'); 
   const joystick = document.getElementById('joystick'); 
   if(window.innerWidth > 900){ 
@@ -1046,9 +1043,9 @@ function adaptUI(){
   if(startModal && startModal.textContent.includes('hey')) {
      showStartScreen(); 
   }
-}
-window.addEventListener('resize', adaptUI); 
-adaptUI();
-</script>
+  }
+  window.addEventListener('resize', adaptUI); 
+  adaptUI();
+  </script>
 </body>
 </html>
