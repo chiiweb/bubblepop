@@ -47,3 +47,40 @@ function drawPlayer(){
 
   ctx.restore();
 }
+if(distSq < radiiSum**2){
+      if(it.type==='bubble'){ 
+        const multiplier = (state.combo + 1) * (state.doublePoints ? 2 : 1);
+        const points = it.points * multiplier;
+        state.score += points; 
+        state.combo++;
+        spawnParticles(it.x,it.y,it.color,15); 
+        playBeep(800 + state.combo * 100, 0.06,'square',0.12); 
+        
+        clearTimeout(comboTimer);
+        comboTimer = setTimeout(()=>{ state.combo = 0; updateUI(); }, 1500);
+        
+        const scoreThreshold = 100 + state.level * 150;
+        // FIX: Next level check
+        if(state.score > scoreThreshold * state.level) nextLevel();
+      }
+      else if(it.type==='power'){ 
+        applyPower(it.subtype); 
+        spawnParticles(it.x,it.y,'#FFD700',18);
+      }
+      items.splice(i,1);
+      updateUI();
+      continue;
+    }
+// ... Inside if(it.type==='bubble')
+        spawnParticles(it.x,it.y,it.color,15); 
+        isPlayerAction = true; // Set action state
+        setTimeout(() => { isPlayerAction = false; }, 200); // Reset after 200ms
+        playBeep(800 + state.combo * 100, 0.06,'square',0.12); 
+        // ...
+
+        // ... Inside else if(it.type==='power')
+        applyPower(it.subtype); 
+        spawnParticles(it.x,it.y,'#FFD700',18);
+        isPlayerAction = true; // Set action state
+        setTimeout(() => { isPlayerAction = false; }, 200); // Reset after 200ms
+        // ...
