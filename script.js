@@ -1,9 +1,11 @@
-// Add these lines to load your player images
+// --- IMAGE LOADING AND PLAYER STATE ---
 const playerImage = new Image();
-playerImage.src = 'chiikawa.webp'; // Replace with the actual URL or base64 data for Image 1
+playerImage.src = 'chiikawa.webp';
 const playerActionImage = new Image();
-playerActionImage.src = 'output-onlinepngtools (12).png'; // Replace with the actual URL or base64 data for Image 2
+playerActionImage.src = 'output-onlinepngtools (12).png';
 let isPlayerAction = false; // Flag to switch between normal and action image
+
+// --- PLAYER DRAWING FUNCTION ---
 function drawPlayer(){
   ctx.save();
   ctx.translate(player.x, player.y);
@@ -47,8 +49,18 @@ function drawPlayer(){
 
   ctx.restore();
 }
+
+// --- REST OF YOUR GAME SETUP (state, canvas, audio context, etc.) ---
+// ... (The rest of your initial variables and setup)
+// ...
+
+// --- COLLISION LOGIC (This should be inside your game's main update/loop function) ---
+
+/* * NOTE: This block assumes it is inside a loop (e.g., 'for(let i=items.length-1; i>=0; i--)' 
+* where 'it' is the current item being checked.
+*/
 if(distSq < radiiSum**2){
-      if(it.type==='bubble'){ 
+    if(it.type==='bubble'){ 
         const multiplier = (state.combo + 1) * (state.doublePoints ? 2 : 1);
         const points = it.points * multiplier;
         state.score += points; 
@@ -56,31 +68,30 @@ if(distSq < radiiSum**2){
         spawnParticles(it.x,it.y,it.color,15); 
         playBeep(800 + state.combo * 100, 0.06,'square',0.12); 
         
+        // **FIX 1: Action flag set and reset (150ms flash)**
+        isPlayerAction = true;
+        setTimeout(() => { isPlayerAction = false; }, 150);
+        
         clearTimeout(comboTimer);
         comboTimer = setTimeout(()=>{ state.combo = 0; updateUI(); }, 1500);
         
-        const scoreThreshold = 100 + state.level * 150;
-        // FIX: Next level check
-        if(state.score > scoreThreshold * state.level) nextLevel();
-      }
-      else if(it.type==='power'){ 
-        applyPower(it.subtype); 
-        spawnParticles(it.x,it.y,'#FFD700',18);
-      }
-      items.splice(i,1);
-      updateUI();
-      continue;
+        // **FIX 2: Corrected Level-Up Check**
+        // A simple progression: requires 250 * current level to advance
+        const levelGoal = 250 * state.level;
+        if(state.score >= levelGoal) nextLevel();
     }
-// ... Inside if(it.type==='bubble')
-        spawnParticles(it.x,it.y,it.color,15); 
-        isPlayerAction = true; // Set action state
-        setTimeout(() => { isPlayerAction = false; }, 200); // Reset after 200ms
-        playBeep(800 + state.combo * 100, 0.06,'square',0.12); 
-        // ...
-
-        // ... Inside else if(it.type==='power')
+    else if(it.type==='power'){ 
         applyPower(it.subtype); 
         spawnParticles(it.x,it.y,'#FFD700',18);
-        isPlayerAction = true; // Set action state
-        setTimeout(() => { isPlayerAction = false; }, 200); // Reset after 200ms
-        // ...
+
+        // **FIX 1: Action flag set and reset for power-ups**
+        isPlayerAction = true;
+        setTimeout(() => { isPlayerAction = false; }, 150);
+    }
+    items.splice(i,1);
+    updateUI();
+    continue;
+}
+
+// --- REST OF YOUR GAME FUNCTIONS (nextLevel, updateUI, applyPower, etc.) ---
+// ...
