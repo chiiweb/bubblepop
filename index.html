@@ -3,72 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Bubble Pop Extreme!! ✨</title>
+  <title>bubble pop extreme!! ✨</title>
   <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;circle cx='50' cy='50' r='45' fill='%23ff6b9d'/&gt;&lt;circle cx='35' cy='35' r='8' fill='%23ffffff' opacity='0.6'/&gt;&lt;/svg&gt;">
   <style>
-    /* Styling based on original snippet, using Comic Sans MS for a fun, casual look */
-    :root{ --bg:#ff6b9d; --panel:#ffffff22; --accent:#ffd86b; --muted:rgba(255,255,255,0.85); }
-    html,body{ height:100%; margin:0; background: linear-gradient(180deg,#ff6b9d 0%, #c44569 60%, #a29bfe 100%); font-family:'Comic Sans MS',cursive,system-ui; color:white; -webkit-user-select:none; user-select:none; overflow:hidden; font-size:16px;}
-    #gameWrap{ position:relative; width:100%; height:100vh; display:flex; align-items:stretch; flex-direction:column; }
-    #gameCanvas{ flex-grow:1; display:block; background-color:rgba(255,255,255,0.05); }
-
-    #hud{ position:absolute; top:0; left:0; width:100%; display:flex; justify-content:space-between; align-items:flex-start; padding:10px; box-sizing:border-box; z-index:10; font-weight:bold; }
-    .panel{ background:var(--panel); padding:8px 12px; border-radius:12px; backdrop-filter:blur(5px); display:inline-flex; align-items:center; border:2px solid var(--accent); white-space:nowrap; }
-    #score, #level, #high{ color:var(--accent); font-size:1.2em; margin-left:5px; }
-    .topRightControls{ margin-left:auto; }
-    .topRightControls label{ margin-left:15px; font-weight:normal; }
-
-    /* Modal Styling */
-    #modal{ position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(10px); display:none; flex-direction:column; justify-content:center; align-items:center; z-index:100; text-align:center; }
-    #modalContent{ background:white; color:var(--bg); padding:30px 40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5); transform:scale(0.9); transition:transform 0.3s ease; max-width:90%; }
-    #modal.show #modalContent{ transform:scale(1); }
-    #modalTitle{ font-size:2.5em; margin-top:0; color:#c44569; }
-    #modalMessage{ font-size:1.2em; margin-bottom:20px; color:#666; }
-    #modalButton{ background:var(--accent); color:var(--bg); border:none; padding:12px 30px; border-radius:10px; font-size:1.5em; font-weight:bold; cursor:pointer; transition:background 0.2s, transform 0.1s; box-shadow:0 4px #e0b44b; }
-    #modalButton:active{ transform:translateY(2px); box-shadow:0 2px #e0b44b; }
-
-    /* Mobile Controls Styling (Buttons/Joystick) */
-    #controlsMobile {
-        position: absolute; bottom: 0; left: 0; width: 100%; padding: 10px; box-sizing: border-box; display: flex;
-        justify-content: space-between; align-items: center; z-index: 50;
-    }
-    #leftGroup, #rightGroup { display: flex; gap: 10px; }
-    .btn {
-        background: var(--accent); color: var(--bg); border: none; padding: 15px 20px; border-radius: 50%;
-        font-size: 1.5em; font-weight: bold; cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px #e0b44b;
-        width: 60px; height: 60px; display: flex; justify-content: center; align-items: center;
-    }
-    .btn:active { transform: translateY(2px); box-shadow: 0 2px #e0b44b; }
-
-    @media (min-width: 900px) {
-        #controlsMobile { display: none !important; }
-    }
+  :root{ --bg:#ff6b9d; --panel:#ffffff22; --accent:#ffd86b; --muted:rgba(255,255,255,0.85); }
+  html,body{ height:100%; margin:0; background: linear-gradient(180deg,#ff6b9d 0%, #c44569 60%, #a29bfe 100%); font-family:'Comic Sans MS',cursive,system-ui; color:white; -webkit-user-select:none; user-select:none; overflow:hidden; font-size:16px;}
+  #gameWrap{ position:relative; width:100%; height:100vh; display:flex; align-items:stretch; justify-content:center; }
+  canvas{ display:block; background:transparent; width:100%; height:100%; touch-action:none; }
+  #hud{ position:absolute; top:12px; left:12px; right:12px; display:flex; gap:8px; justify-content:space-between; pointer-events:none; z-index:30; flex-wrap:wrap;}
+  .panel{ background:linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); border-radius:16px; padding:10px 14px; font-weight:700; font-size:15px; display:inline-flex; gap:8px; align-items:center; pointer-events:auto; backdrop-filter:blur(8px); box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+  #controlsMobile{ position:absolute; bottom:18px; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:0 18px; z-index:40; pointer-events:none; }
+  .btn{ pointer-events:auto; -webkit-tap-highlight-color: rgba(0,0,0,0); background:rgba(255,255,255,0.15); backdrop-filter:blur(8px); border:3px solid rgba(255,255,255,0.3); color:white; width:68px; height:68px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:28px; user-select:none; touch-action:none; transition:transform .08s ease; box-shadow:0 6px 20px rgba(0,0,0,0.2); font-weight:900;}
+  .btn:active{ transform: scale(.92); }
+  #leftGroup{ display:flex; gap:12px; align-items:center; }
+  #rightGroup{ display:flex; gap:12px; align-items:center; }
+  #modal{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); background:linear-gradient(180deg, rgba(255,107,157,0.95), rgba(196,69,105,0.95)); backdrop-filter:blur(12px); border-radius:20px; padding:24px; text-align:center; z-index:50; display:none; min-width:280px; max-width:90%; max-height:90vh; overflow-y:auto; box-shadow:0 12px 40px rgba(0,0,0,0.35); border:3px solid rgba(255,255,255,0.3);}
+  #modal h2{ margin:0 0 12px 0; font-size:32px; text-shadow:2px 2px 8px rgba(0,0,0,0.3); }
+  #modal button{ margin-top:16px; padding:12px 24px; border-radius:16px; border:none; background:linear-gradient(135deg, #ffd86b, #ffaa00); color:#333; font-weight:900; font-size:18px; cursor:pointer; transition:transform 0.1s; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
+  #modal button:active{ transform:scale(0.95); }
+  #leader{ margin-top:12px; text-align:left; font-size:14px; color:var(--muted); background:rgba(0,0,0,0.15); padding:12px; border-radius:12px; }
+  .joystick{
+    position:absolute;
+    bottom:18px;
+    left:18px;
+    width:140px;
+    height:140px;
+    border-radius:50%;
+    z-index:41;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    pointer-events:auto;
+    touch-action:none;
+  }
+  .joy-base{
+    width:100%;
+    height:100%;
+    background:rgba(255,255,255,0.12);
+    backdrop-filter:blur(8px);
+    border:3px solid rgba(255,255,255,0.25);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 6px 20px rgba(0,0,0,0.2);
+  }
+  .joy-knob{
+    width:56px;
+    height:56px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#ffffff,#ffffffaa);
+    display:block;
+    transform:translate(0,0);
+    box-shadow:0 6px 18px rgba(0,0,0,0.35);
+    border:2px solid rgba(255,255,255,0.5);
+  }
+  @media (min-width:900px){ .joystick{ display:none; } .hidden-desktop{ display:none; } }
+  @media (max-width:900px){ .hidden-mobile{ display:none; } }
+  .topRightControls{ display:flex; gap:8px; align-items:center; pointer-events:auto; flex-wrap:wrap; }
+  .topRightControls label{ display:flex; align-items:center; gap:4px; font-size:13px; font-weight:700; cursor:pointer; }
+  input[type="checkbox"]{ cursor:pointer; width:18px; height:18px; }
+  #username{ width:100%; padding:12px; border-radius:12px; border:3px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.15); color:white; font-size:16px; font-weight:700; text-align:center; margin:12px 0; outline:none; font-family:inherit;}
+  #username::placeholder{ color:rgba(255,255,255,0.6); }
+  .star-particle{ position:absolute; pointer-events:none; animation:float-up 2s ease-out forwards; z-index:100; }
+  @keyframes float-up{ 0%{opacity:1; transform:translateY(0) scale(1);} 100%{opacity:0; transform:translateY(-100px) scale(0.3);} }
   </style>
 </head>
 <body>
   <div id="gameWrap">
     <canvas id="gameCanvas"></canvas>
-    <!-- Audio elements are included but set to empty src as actual files were not provided -->
-    <audio id="gameMusic" src="" loop preload="auto"></audio>
-    <audio id="sfxCollect" src="" preload="auto"></audio>
-    <audio id="sfxDamage" src="" preload="auto"></audio>
+    <audio id="gameMusic" src="stargame.mp3" loop preload="auto"></audio>
     <div id="hud">
       <div class="panel">
-        Score: <span id="score">0</span> | Lives: <span id="livesDisplay">❤️❤️❤️</span>
+        score: <span id="score">0</span> | <span id="livesDisplay">❤️❤️❤️</span>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <div class="panel">
-          Level: <span id="level">1</span>
+          level: <span id="level">1</span>
         </div>
         <div class="panel">
-          High: <span id="high">0</span>
+          high: <span id="high">0</span>
         </div>
         <div class="panel topRightControls">
           <label>sfx <input id="toggleSound" type="checkbox" checked></label> <label>music <input id="toggleMusic" type="checkbox" checked></label>
         </div>
       </div>
     </div>
-    <!-- Mobile Controls -->
     <div id="controlsMobile">
       <div id="leftGroup">
         <button id="btnLeft" class="btn">◀</button> <button id="btnRight" class="btn">▶</button>
@@ -77,671 +97,19 @@
         <button id="btnAction" class="btn">🎯</button>
       </div>
     </div>
-    <!-- Modal for Start/Game Over -->
-    <div id="modal">
-      <div id="modalContent">
-        <h2 id="modalTitle">Welcome!</h2>
-        <p id="modalMessage">Collect the power-ups and avoid the bubbles! Use the arrow keys or mobile controls to move.</p>
-        <button id="modalButton">Start Game</button>
+    <div class="joystick" id="joystick">
+      <div class="joy-base" id="joyBase">
+        <div class="joy-knob" id="joyKnob"></div>
       </div>
     </div>
+    <div id="modal">
+      <h2 id="modalTitle">game over!! 💖</h2>
+      <div id="modalText">
+        final score: <strong id="modalScore">0</strong>
+      </div>
+      <div id="leader"></div><button id="btnRestart">play again!! ✨</button>
+    </div>
   </div>
-
-  <!-- Firebase Imports -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // Expose Firebase components to the global window object for use in the main script
-    window.firebase = {
-        initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged,
-        getFirestore, doc, setDoc, onSnapshot, setLogLevel
-    };
-  </script>
-
-  <!-- Game Logic -->
-  <script>
-    // --- Global Helpers ---
-    const rand = (a,b) => a + Math.random()*(b-a);
-    const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
-    const pick = arr => arr[Math.floor(Math.random()*arr.length)];
-    const dist = (x1, y1, x2, y2) => Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-
-    // --- Canvas Setup ---
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d', { alpha: true });
-    let DPR = Math.max(1, window.devicePixelRatio || 1);
-    let animationFrameId;
-
-    function resize(){
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      canvas.style.width = w + 'px';
-      canvas.style.height = h + 'px';
-      canvas.width = Math.floor(w * DPR);
-      canvas.height = Math.floor(h * DPR);
-      ctx.setTransform(DPR,0,0,DPR,0,0);
-    }
-    window.addEventListener('resize', resize);
-
-    // --- Game State ---
-    let state = {
-      score:0, lives:3, level:1, running:false, paused:false, high:0, sound:true, music:true,
-      username:'', hasUsername:false, combo:0, doublePoints:false,
-      player: null, items: [], obstacles: [], particles: [],
-      lastSpawnTime: 0, spawnInterval: 1000,
-      comboTimeoutId: null,
-      maxLevel: 10
-    };
-
-    // --- Asset Loading (User's original local paths with a fallback) ---
-    const playerImage = new Image();
-    playerImage.src = 'chiikawa.webp';
-    playerImage.onerror = () => { console.log('Failed to load player image. Using color fallback.'); };
-
-    const playerActionImage = new Image();
-    playerActionImage.src = 'output-onlinepngtools (12).png';
-    playerActionImage.onerror = () => { console.log('Failed to load action image. Using color fallback.'); };
-
-    let isPlayerAction = false; // State for the action image
-
-    // --- Audio Elements ---
-    const gameMusic = document.getElementById('gameMusic');
-    const sfxCollect = document.getElementById('sfxCollect');
-    const sfxDamage = document.getElementById('sfxDamage');
-
-    gameMusic.volume = 0.5;
-    sfxCollect.volume = 0.8;
-    sfxDamage.volume = 0.8;
-
-    // --- Game Entities Classes ---
-
-    class Player {
-      constructor() {
-        // Ensure initial position is calculated after resize has run once
-        this.w = 50;
-        this.h = 50;
-        // Access canvas.width/height through DPR for correct coordinate system
-        this.x = canvas.width / DPR / 2;
-        this.y = canvas.height / DPR - this.h * 1.5;
-        this.speed = 5;
-        this.dx = 0; // Delta X for movement
-      }
-      update() {
-        this.x += this.dx;
-        this.x = clamp(this.x, this.w / 2, canvas.width / DPR - this.w / 2);
-      }
-      draw() {
-        const img = isPlayerAction ? playerActionImage : playerImage;
-        const halfW = this.w / 2;
-        const halfH = this.h / 2;
-
-        if (img.complete && img.naturalHeight !== 0) {
-            ctx.drawImage(img, this.x - halfW, this.y - halfH, this.w, this.h);
-        } else {
-            // Fallback if image fails to load
-            ctx.fillStyle = '#FFD86B';
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, halfW, 0, Math.PI * 2);
-            ctx.fill();
-        }
-      }
-      hitbox() {
-        // Reduce hitbox size for a more forgiving game
-        return { x: this.x - this.w/4, y: this.y - this.h/4, w: this.w/2, h: this.h/2 };
-      }
-    }
-
-    class Obstacle {
-      constructor(type) {
-        this.type = type; // 'basic' or 'big'
-        this.r = type === 'big' ? rand(20, 30) : rand(10, 18);
-        this.x = rand(this.r, canvas.width / DPR - this.r);
-        this.y = -this.r;
-        this.speed = rand(2, 4) * (1 + state.level * 0.1);
-        this.color = type === 'big' ? '#a29bfe' : '#ffffff';
-      }
-      update() {
-        this.y += this.speed;
-        return this.y > canvas.height / DPR + this.r; // Return true if off-screen
-      }
-      draw() {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-        ctx.fill();
-        // Shadow effect
-        ctx.strokeStyle = this.type === 'big' ? '#8e85ef' : '#cccccc';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-    }
-
-    class Item {
-      constructor(type) {
-        this.type = type; // 'score', 'double', 'life'
-        this.r = 15;
-        this.x = rand(this.r, canvas.width / DPR - this.r);
-        this.y = -this.r;
-        this.speed = rand(3, 5);
-        this.color = type === 'life' ? '#f44336' : (type === 'double' ? '#ffd86b' : '#4caf50');
-        this.icon = type === 'life' ? '❤️' : (type === 'double' ? '✨' : '⭐');
-      }
-      update() {
-        this.y += this.speed;
-        return this.y > canvas.height / DPR + this.r; // Return true if off-screen
-      }
-      draw() {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.font = '16px serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(this.icon, this.x, this.y);
-      }
-    }
-
-    function createParticle(x, y, color, speedX, speedY, size, life) {
-        state.particles.push({
-            x, y, color,
-            vx: speedX, vy: speedY,
-            size, life, alpha: 1
-        });
-    }
-
-    // --- Particle Logic ---
-    function updateParticles() {
-      state.particles = state.particles.filter(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.life--;
-        p.alpha = p.life / 60; // Fades out over 60 frames
-        return p.life > 0;
-      });
-    }
-
-    function drawParticles(){
-      for(const p of state.particles){
-        ctx.globalAlpha = p.alpha || 1;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-    }
-
-    // --- Spawning and Game Progression ---
-
-    function spawnEntity(type) {
-      if (type === 'obstacle') {
-        const obsType = Math.random() < 0.2 ? 'big' : 'basic';
-        state.obstacles.push(new Obstacle(obsType));
-      } else if (type === 'item') {
-        const itemType = pick(['score', 'double', 'life', 'score', 'score']); // life and double are less common
-        state.items.push(new Item(itemType));
-      }
-    }
-
-    function checkLevelUp() {
-      const targetScore = state.level * 500;
-      if (state.score >= targetScore && state.level < state.maxLevel) {
-        state.level++;
-        state.spawnInterval = Math.max(300, 1000 - state.level * 80);
-        showModal('LEVEL UP!', `You reached Level ${state.level}! Obstacles are faster!`, 'Continue', hideModal);
-      }
-    }
-
-    function spawnLogic(timestamp) {
-      if (timestamp - state.lastSpawnTime > state.spawnInterval) {
-        if (Math.random() < 0.7) {
-          spawnEntity('obstacle');
-          if (Math.random() < 0.1 * state.level) { // Spawn more based on level
-              spawnEntity('obstacle');
-          }
-        } else {
-          spawnEntity('item');
-        }
-        state.lastSpawnTime = timestamp;
-      }
-    }
-
-    // --- Collision and Game Logic ---
-
-    let playerHitTimer = 0;
-    const invulnerabilityDuration = 120; // 2 seconds at 60fps
-
-    function checkCollisions() {
-      // Must check if player is initialized before accessing its methods
-      if (!state.player) return; 
-
-      const playerHitbox = state.player.hitbox();
-
-      // 1. Item Collection
-      state.items = state.items.filter(item => {
-        const itemDist = dist(state.player.x, state.player.y, item.x, item.y);
-        if (itemDist < state.player.w / 3 + item.r) {
-          playSound(sfxCollect);
-          let scoreIncrease = 100;
-
-          if (item.type === 'double') {
-            state.doublePoints = true;
-            scoreIncrease = 0; // No initial score, just activation
-            clearTimeout(state.doublePointsTimeoutId);
-            state.doublePointsTimeoutId = setTimeout(() => { state.doublePoints = false; }, 5000); // 5 seconds
-          } else if (item.type === 'life') {
-            state.lives = clamp(state.lives + 1, 0, 5);
-            scoreIncrease = 0;
-          }
-
-          if (item.type !== 'double' && item.type !== 'life') {
-            const multiplier = state.doublePoints ? 2 : 1;
-            state.score += scoreIncrease * multiplier;
-            state.combo = clamp(state.combo + 1, 0, 5); // Max combo 5
-            clearTimeout(state.comboTimeoutId);
-            state.comboTimeoutId = setTimeout(() => { state.combo = 0; }, 3000);
-          }
-
-          // Create collection particles
-          for(let i=0; i<10; i++) {
-              createParticle(item.x, item.y, item.color, rand(-2, 2), rand(-2, 2), rand(3, 5), 30);
-          }
-
-          return false; // Item collected, remove it
-        }
-        return true; // Keep item
-      });
-
-      // 2. Obstacle Damage
-      if (playerHitTimer === 0) {
-        state.obstacles = state.obstacles.filter(obstacle => {
-          const obsDist = dist(state.player.x, state.player.y, obstacle.x, obstacle.y);
-
-          if (obsDist < state.player.w / 3 + obstacle.r) {
-            playSound(sfxDamage);
-            state.lives--;
-            state.combo = 0; // Combo break on hit
-            playerHitTimer = invulnerabilityDuration;
-
-            // Create damage particles
-            for(let i=0; i<20; i++) {
-                createParticle(state.player.x, state.player.y, obstacle.color, rand(-5, 5), rand(-5, 5), rand(3, 7), 40);
-            }
-
-            if (state.lives <= 0) {
-              gameOver();
-            }
-
-            return false; // Obstacle hit, remove it
-          }
-          return true; // Keep obstacle
-        });
-      } else {
-        playerHitTimer--;
-      }
-    }
-
-    function updateEntities() {
-      // Must check if player is initialized before accessing its methods
-      if (!state.player) return;
-
-      // Filter out off-screen entities
-      state.obstacles = state.obstacles.filter(obs => !obs.update());
-      state.items = state.items.filter(item => !item.update());
-
-      state.player.update();
-      updateParticles();
-    }
-
-    function update() {
-      updateEntities();
-      checkCollisions();
-      checkLevelUp();
-    }
-
-    // --- Drawing Functions ---
-
-    function clear() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    function drawPlayer() {
-      if (!state.player) return;
-      // Flash effect during invulnerability
-      if (playerHitTimer > 0 && Math.floor(playerHitTimer / 10) % 2 === 0) {
-        ctx.globalAlpha = 0.4;
-      }
-      state.player.draw();
-      ctx.globalAlpha = 1;
-    }
-
-    function drawObstacles() {
-      state.obstacles.forEach(obs => obs.draw());
-    }
-
-    function drawItems() {
-      state.items.forEach(item => item.draw());
-    }
-
-    function drawCombo(){
-      if(state.combo > 0){
-        ctx.save();
-        ctx.font = 'bold 24px Comic Sans MS';
-        ctx.fillStyle = '#FFD86B';
-        ctx.strokeStyle = '#FF6B9D';
-        ctx.lineWidth = 3;
-        ctx.textAlign = 'center';
-        const text = `COMBO x${state.combo + 1}!!`;
-        // FIX: Use canvas dimensions divided by DPR for correct drawing coordinates
-        ctx.strokeText(text, canvas.width/DPR/2, 80);
-        ctx.fillText(text, canvas.width/DPR/2, 80);
-        ctx.restore();
-      }
-    }
-    
-    function drawDoublePointsIndicator() {
-      if (state.doublePoints) {
-        ctx.save();
-        ctx.font = 'bold 20px Comic Sans MS';
-        ctx.fillStyle = '#FFD86B';
-        ctx.textAlign = 'right';
-        // FIX: Use canvas dimensions divided by DPR for correct drawing coordinates
-        const text = `2X SCORE ACTIVE!`;
-        ctx.fillText(text, canvas.width/DPR - 20, 150);
-        ctx.restore();
-      }
-    }
-
-    function render() {
-      clear();
-      drawItems();
-      drawObstacles();
-      drawPlayer();
-      drawParticles();
-      drawCombo();
-      drawDoublePointsIndicator();
-    }
-
-    function updateHUD() {
-      document.getElementById('score').textContent = state.score;
-      document.getElementById('level').textContent = state.level;
-      document.getElementById('high').textContent = state.high;
-
-      // Update lives display with heart emojis, max 5 hearts shown
-      const livesDisplay = document.getElementById('livesDisplay');
-      livesDisplay.textContent = '❤️'.repeat(state.lives) + '💔'.repeat(Math.max(0, 5 - state.lives));
-    }
-
-    // --- Game Loop and Control ---
-
-    function gameLoop(timestamp) {
-      if (state.running && !state.paused) {
-        update();
-        spawnLogic(timestamp);
-      }
-      render();
-      updateHUD();
-      animationFrameId = requestAnimationFrame(gameLoop);
-    }
-
-    // *** Game Over Function ***
-    function gameOver() {
-      // 1. Stop Game Loop
-      state.running = false;
-      cancelAnimationFrame(animationFrameId);
-
-      // 2. Stop Music
-      stopMusic();
-
-      // 3. Check and Save High Score
-      if (state.score > state.high) {
-          state.high = state.score;
-          saveHighScore(); // Handles the Firestore update
-      }
-      
-      // 4. Show Game Over modal
-      showModal(
-        'GAME OVER!', 
-        `Your final score: ${state.score}. ${state.score > state.high ? 'NEW HIGH SCORE!' : `High Score: ${state.high}`}`,
-        'Play Again', 
-        resetGame
-      );
-    }
-
-    function resetGame() {
-      // Reset state variables
-      state.score = 0;
-      state.lives = 3;
-      state.level = 1;
-      state.combo = 0;
-      state.doublePoints = false;
-      state.lastSpawnTime = performance.now();
-      state.spawnInterval = 1000;
-      
-      // Clear game entities
-      state.obstacles = [];
-      state.items = [];
-      state.particles = [];
-      playerHitTimer = 0;
-
-      // Re-center player based on potentially resized canvas
-      state.player.x = canvas.width / DPR / 2;
-      state.player.y = canvas.height / DPR - state.player.h * 1.5;
-      
-      hideModal();
-      startGame();
-    }
-    
-    function startGame() {
-        state.running = true;
-        playMusic();
-        gameLoop(performance.now()); // Start the loop
-    }
-
-    // --- UI and Modal Handlers ---
-
-    const modal = document.getElementById('modal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalMessage = document.getElementById('modalMessage');
-    const modalButton = document.getElementById('modalButton');
-
-    function showModal(title, message, buttonText, buttonAction) {
-      modalTitle.textContent = title;
-      modalMessage.innerHTML = message;
-      modalButton.textContent = buttonText;
-      
-      // Use cloneNode to safely replace event listener
-      const newButton = modalButton.cloneNode(true);
-      modalButton.parentNode.replaceChild(newButton, modalButton);
-      newButton.addEventListener('click', buttonAction);
-      
-      modal.classList.add('show');
-      modal.style.display = 'flex';
-    }
-    
-    function hideModal() {
-      modal.classList.remove('show');
-      modal.style.display = 'none';
-    }
-
-    // --- Sound/Music Toggles ---
-
-    function playMusic() {
-      if (state.music) gameMusic.play().catch(e => console.log('Music autoplay failed:', e));
-    }
-
-    function stopMusic() {
-      gameMusic.pause();
-      gameMusic.currentTime = 0;
-    }
-
-    function playSound(sfx) {
-      if (state.sound) {
-        sfx.currentTime = 0; // Reset for quick re-trigger
-        sfx.play().catch(e => console.log('SFX failed:', e));
-      }
-    }
-
-    document.getElementById('toggleMusic').addEventListener('change', (e) => {
-      state.music = e.target.checked;
-      if (state.music) {
-        if(state.running) playMusic();
-      } else {
-        gameMusic.pause();
-      }
-    });
-
-    document.getElementById('toggleSound').addEventListener('change', (e) => {
-      state.sound = e.target.checked;
-    });
-
-    // --- Input Handling (Keyboard and Mobile) ---
-    
-    const KEY_LEFT = ['ArrowLeft', 'a', 'A'];
-    const KEY_RIGHT = ['ArrowRight', 'd', 'D'];
-
-    document.addEventListener('keydown', e => {
-      if (state.running && state.player) {
-        if (KEY_LEFT.includes(e.key)) state.player.dx = -state.player.speed;
-        if (KEY_RIGHT.includes(e.key)) state.player.dx = state.player.speed;
-      }
-      // Start Game on Enter/Space if modal is showing
-      if (!state.running && (e.key === 'Enter' || e.key === ' ')) {
-          if (modal.style.display === 'flex') {
-              modalButton.click();
-          }
-      }
-    });
-
-    document.addEventListener('keyup', e => {
-      if (state.running && state.player) {
-        if (KEY_LEFT.includes(e.key) || KEY_RIGHT.includes(e.key)) {
-          state.player.dx = 0;
-        }
-      }
-    });
-
-    // Mobile Button Bindings
-    document.getElementById('btnLeft').addEventListener('touchstart', (e) => { e.preventDefault(); if(state.player) state.player.dx = -state.player.speed; }, { passive: false });
-    document.getElementById('btnLeft').addEventListener('touchend', () => { if(state.player) state.player.dx = 0; });
-    document.getElementById('btnRight').addEventListener('touchstart', (e) => { e.preventDefault(); if(state.player) state.player.dx = state.player.speed; }, { passive: false });
-    document.getElementById('btnRight').addEventListener('touchend', () => { if(state.player) state.player.dx = 0; });
-
-    // Mobile Action Button (placeholder action)
-    document.getElementById('btnAction').addEventListener('touchstart', (e) => { e.preventDefault(); isPlayerAction = true; }, { passive: false });
-    document.getElementById('btnAction').addEventListener('touchend', () => { isPlayerAction = false; });
-
-    // --- Firebase and High Score Persistence ---
-    
-    // Global variables (set by the Canvas environment)
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-
-    let db, auth, userId;
-    let isAuthReady = false;
-
-    async function setupFirebase() {
-        if (typeof window.firebase === 'undefined') {
-            setTimeout(setupFirebase, 100);
-            return;
-        }
-
-        const { initializeApp, getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, getFirestore, setLogLevel } = window.firebase;
-        
-        try {
-            const app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            setLogLevel('Debug');
-
-            if (typeof __initial_auth_token !== 'undefined') {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    userId = user.uid;
-                } else {
-                    userId = sessionStorage.getItem('anonId') || crypto.randomUUID();
-                    sessionStorage.setItem('anonId', userId);
-                }
-                isAuthReady = true;
-                console.log('Firebase Auth Ready. User ID:', userId);
-                loadHighScore();
-            });
-
-        } catch (error) {
-            console.error("Firebase setup failed:", error);
-        }
-    }
-
-    function getHighScoreDocRef() {
-        if (!db || !userId) return null;
-        const { doc } = window.firebase;
-        return doc(db, `artifacts/${appId}/users/${userId}/game_data/high_score`);
-    }
-
-    function loadHighScore() {
-        if (!isAuthReady || !db || !userId) return;
-
-        const docRef = getHighScoreDocRef();
-        if (!docRef) return;
-        const { onSnapshot } = window.firebase;
-
-        onSnapshot(docRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                state.high = data.value || 0;
-                document.getElementById('high').textContent = state.high;
-            } else {
-                state.high = 0;
-                document.getElementById('high').textContent = state.high;
-            }
-        }, (error) => {
-            console.error("Error listening to high score:", error);
-        });
-    }
-
-    async function saveHighScore() {
-        if (!isAuthReady || state.score <= state.high) return;
-
-        const docRef = getHighScoreDocRef();
-        if (!docRef) return;
-        const { setDoc } = window.firebase;
-
-        try {
-            await setDoc(docRef, { value: state.score }, { merge: true });
-            console.log("High score updated in Firestore:", state.score);
-        } catch (e) {
-            console.error("Error saving high score to Firestore:", e);
-        }
-    }
-
-    // --- Initialization ---
-
-    document.addEventListener('DOMContentLoaded', function () {
-      // 1. Initial size calculation
-      resize();
-      
-      // 2. Initialize Player (critical fix)
-      state.player = new Player();
-      
-      // 3. Setup Firebase for score persistence
-      setupFirebase();
-
-      // 4. Show initial modal
-      showModal('Welcome to Bubble Pop Extreme!! ✨', 'Collect stars and power-ups while dodging the purple bubbles. Get ready to tap and swipe your way to a high score!', 'Start Game', startGame);
-    });
-
-  </script>
+  <script src="game.js"></script>
 </body>
 </html>
