@@ -40,29 +40,15 @@
     }
     .btn:active { transform: translateY(2px); box-shadow: 0 2px #e0b44b; }
 
-    /* Joystick Styling */
-    .joystick {
-        position: absolute; bottom: 10px; left: 10px; width: 100px; height: 100px; display: none; /* Hidden by default */
-        z-index: 60;
-    }
-    .joy-base {
-        width: 100%; height: 100%; background: rgba(255, 255, 255, 0.2); border-radius: 50%;
-        display: flex; justify-content: center; align-items: center;
-    }
-    .joy-knob {
-        width: 40%; height: 40%; background: var(--accent); border-radius: 50%;
-        position: absolute; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    }
-
     @media (min-width: 900px) {
-        #controlsMobile, .joystick { display: none !important; }
+        #controlsMobile { display: none !important; }
     }
   </style>
 </head>
 <body>
   <div id="gameWrap">
     <canvas id="gameCanvas"></canvas>
-    <!-- Use dummy audio elements as the actual source file 'stargame.mp3' is not provided, but the logic requires them -->
+    <!-- Audio elements are included but set to empty src as actual files were not provided -->
     <audio id="gameMusic" src="" loop preload="auto"></audio>
     <audio id="sfxCollect" src="" preload="auto"></audio>
     <audio id="sfxDamage" src="" preload="auto"></audio>
@@ -138,7 +124,6 @@
       ctx.setTransform(DPR,0,0,DPR,0,0);
     }
     window.addEventListener('resize', resize);
-    resize();
 
     // --- Game State ---
     let state = {
@@ -160,14 +145,12 @@
     playerActionImage.onerror = () => { console.log('Failed to load action image. Using color fallback.'); };
 
     let isPlayerAction = false; // State for the action image
-    let actionDuration = 0; // Countdown for action state
 
     // --- Audio Elements ---
     const gameMusic = document.getElementById('gameMusic');
     const sfxCollect = document.getElementById('sfxCollect');
     const sfxDamage = document.getElementById('sfxDamage');
 
-    // Default audio placeholders/fallbacks (if user didn't provide actual audio files)
     gameMusic.volume = 0.5;
     sfxCollect.volume = 0.8;
     sfxDamage.volume = 0.8;
@@ -176,11 +159,12 @@
 
     class Player {
       constructor() {
-        // Ensure initial position is based on current canvas size after resize()
+        // Ensure initial position is calculated after resize has run once
         this.w = 50;
         this.h = 50;
-        this.x = canvas.width / 2 / DPR;
-        this.y = canvas.height - this.h * 1.5;
+        // Access canvas.width/height through DPR for correct coordinate system
+        this.x = canvas.width / DPR / 2;
+        this.y = canvas.height / DPR - this.h * 1.5;
         this.speed = 5;
         this.dx = 0; // Delta X for movement
       }
@@ -204,6 +188,7 @@
         }
       }
       hitbox() {
+        // Reduce hitbox size for a more forgiving game
         return { x: this.x - this.w/4, y: this.y - this.h/4, w: this.w/2, h: this.h/2 };
       }
     }
@@ -334,6 +319,9 @@
     const invulnerabilityDuration = 120; // 2 seconds at 60fps
 
     function checkCollisions() {
+      // Must check if player is initialized before accessing its methods
+      if (!state.player) return; 
+
       const playerHitbox = state.player.hitbox();
 
       // 1. Item Collection
@@ -346,7 +334,8 @@
           if (item.type === 'double') {
             state.doublePoints = true;
             scoreIncrease = 0; // No initial score, just activation
-            setTimeout(() => { state.doublePoints = false; }, 5000); // 5 seconds
+            clearTimeout(state.doublePointsTimeoutId);
+            state.doublePointsTimeoutId = setTimeout(() => { state.doublePoints = false; }, 5000); // 5 seconds
           } else if (item.type === 'life') {
             state.lives = clamp(state.lives + 1, 0, 5);
             scoreIncrease = 0;
@@ -400,6 +389,9 @@
     }
 
     function updateEntities() {
+      // Must check if player is initialized before accessing its methods
+      if (!state.player) return;
+
       // Filter out off-screen entities
       state.obstacles = state.obstacles.filter(obs => !obs.update());
       state.items = state.items.filter(item => !item.update());
@@ -421,6 +413,7 @@
     }
 
     function drawPlayer() {
+      if (!state.player) return;
       // Flash effect during invulnerability
       if (playerHitTimer > 0 && Math.floor(playerHitTimer / 10) % 2 === 0) {
         ctx.globalAlpha = 0.4;
@@ -445,8 +438,8 @@
         ctx.strokeStyle = '#FF6B9D';
         ctx.lineWidth = 3;
         ctx.textAlign = 'center';
-        // Corrected x coordinate to use canvas.width/DPR for non-scaled position
         const text = `COMBO x${state.combo + 1}!!`;
+        // FIX: Use canvas dimensions divided by DPR for correct drawing coordinates
         ctx.strokeText(text, canvas.width/DPR/2, 80);
         ctx.fillText(text, canvas.width/DPR/2, 80);
         ctx.restore();
@@ -459,7 +452,7 @@
         ctx.font = 'bold 20px Comic Sans MS';
         ctx.fillStyle = '#FFD86B';
         ctx.textAlign = 'right';
-        // Corrected x coordinate to use canvas.width/DPR for non-scaled position
+        // FIX: Use canvas dimensions divided by DPR for correct drawing coordinates
         const text = `2X SCORE ACTIVE!`;
         ctx.fillText(text, canvas.width/DPR - 20, 150);
         ctx.restore();
@@ -481,9 +474,8 @@
       document.getElementById('level').textContent = state.level;
       document.getElementById('high').textContent = state.high;
 
-      // Update lives display with heart emojis
+      // Update lives display with heart emojis, max 5 hearts shown
       const livesDisplay = document.getElementById('livesDisplay');
-      // Ensure the display maxes out at 5 hearts (though lives is clamped at 5)
       livesDisplay.textContent = '❤️'.repeat(state.lives) + '💔'.repeat(Math.max(0, 5 - state.lives));
     }
 
@@ -499,7 +491,7 @@
       animationFrameId = requestAnimationFrame(gameLoop);
     }
 
-    // *** Corrected Game Over Function ***
+    // *** Game Over Function ***
     function gameOver() {
       // 1. Stop Game Loop
       state.running = false;
@@ -511,7 +503,7 @@
       // 3. Check and Save High Score
       if (state.score > state.high) {
           state.high = state.score;
-          saveHighScore(); // This function handles the Firestore update
+          saveHighScore(); // Handles the Firestore update
       }
       
       // 4. Show Game Over modal
@@ -539,14 +531,9 @@
       state.particles = [];
       playerHitTimer = 0;
 
-      // Re-initialize player position
-      if (state.player) {
-          // Re-center player based on potentially resized canvas
-          state.player.x = canvas.width / 2 / DPR;
-          state.player.y = canvas.height - state.player.h * 1.5;
-      } else {
-          state.player = new Player();
-      }
+      // Re-center player based on potentially resized canvas
+      state.player.x = canvas.width / DPR / 2;
+      state.player.y = canvas.height / DPR - state.player.h * 1.5;
       
       hideModal();
       startGame();
@@ -570,7 +557,7 @@
       modalMessage.innerHTML = message;
       modalButton.textContent = buttonText;
       
-      // Remove previous listeners to prevent multiple actions on click
+      // Use cloneNode to safely replace event listener
       const newButton = modalButton.cloneNode(true);
       modalButton.parentNode.replaceChild(newButton, modalButton);
       newButton.addEventListener('click', buttonAction);
@@ -617,12 +604,11 @@
 
     // --- Input Handling (Keyboard and Mobile) ---
     
-    let keys = {};
     const KEY_LEFT = ['ArrowLeft', 'a', 'A'];
     const KEY_RIGHT = ['ArrowRight', 'd', 'D'];
 
     document.addEventListener('keydown', e => {
-      if (state.running) {
+      if (state.running && state.player) {
         if (KEY_LEFT.includes(e.key)) state.player.dx = -state.player.speed;
         if (KEY_RIGHT.includes(e.key)) state.player.dx = state.player.speed;
       }
@@ -635,19 +621,21 @@
     });
 
     document.addEventListener('keyup', e => {
-      if (KEY_LEFT.includes(e.key) || KEY_RIGHT.includes(e.key)) {
-        state.player.dx = 0;
+      if (state.running && state.player) {
+        if (KEY_LEFT.includes(e.key) || KEY_RIGHT.includes(e.key)) {
+          state.player.dx = 0;
+        }
       }
     });
 
     // Mobile Button Bindings
-    document.getElementById('btnLeft').addEventListener('touchstart', (e) => { e.preventDefault(); state.player.dx = -state.player.speed; }, { passive: false });
-    document.getElementById('btnLeft').addEventListener('touchend', () => { state.player.dx = 0; });
-    document.getElementById('btnRight').addEventListener('touchstart', (e) => { e.preventDefault(); state.player.dx = state.player.speed; }, { passive: false });
-    document.getElementById('btnRight').addEventListener('touchend', () => { state.player.dx = 0; });
+    document.getElementById('btnLeft').addEventListener('touchstart', (e) => { e.preventDefault(); if(state.player) state.player.dx = -state.player.speed; }, { passive: false });
+    document.getElementById('btnLeft').addEventListener('touchend', () => { if(state.player) state.player.dx = 0; });
+    document.getElementById('btnRight').addEventListener('touchstart', (e) => { e.preventDefault(); if(state.player) state.player.dx = state.player.speed; }, { passive: false });
+    document.getElementById('btnRight').addEventListener('touchend', () => { if(state.player) state.player.dx = 0; });
 
-    // Mobile Action Button (not used in this simple game but included for future extension)
-    document.getElementById('btnAction').addEventListener('touchstart', (e) => { e.preventDefault(); isPlayerAction = true; actionDuration = 20; }, { passive: false });
+    // Mobile Action Button (placeholder action)
+    document.getElementById('btnAction').addEventListener('touchstart', (e) => { e.preventDefault(); isPlayerAction = true; }, { passive: false });
     document.getElementById('btnAction').addEventListener('touchend', () => { isPlayerAction = false; });
 
     // --- Firebase and High Score Persistence ---
@@ -660,7 +648,6 @@
     let isAuthReady = false;
 
     async function setupFirebase() {
-        // Wait for dynamic firebase imports to be available
         if (typeof window.firebase === 'undefined') {
             setTimeout(setupFirebase, 100);
             return;
@@ -674,19 +661,16 @@
             db = getFirestore(app);
             setLogLevel('Debug');
 
-            // Authenticate user
             if (typeof __initial_auth_token !== 'undefined') {
                 await signInWithCustomToken(auth, __initial_auth_token);
             } else {
                 await signInAnonymously(auth);
             }
 
-            // Set up Auth State Listener
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     userId = user.uid;
                 } else {
-                    // Fallback UUID for anonymous users if token sign-in fails
                     userId = sessionStorage.getItem('anonId') || crypto.randomUUID();
                     sessionStorage.setItem('anonId', userId);
                 }
@@ -700,11 +684,9 @@
         }
     }
 
-    // Function to get the document reference for the user's high score
     function getHighScoreDocRef() {
         if (!db || !userId) return null;
         const { doc } = window.firebase;
-        // Private Data Path: /artifacts/{appId}/users/{userId}/game_data/high_score
         return doc(db, `artifacts/${appId}/users/${userId}/game_data/high_score`);
     }
 
@@ -715,7 +697,6 @@
         if (!docRef) return;
         const { onSnapshot } = window.firebase;
 
-        // Listen for real-time updates to the high score
         onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
@@ -738,7 +719,6 @@
         const { setDoc } = window.firebase;
 
         try {
-            // Use setDoc with merge:true to create or update
             await setDoc(docRef, { value: state.score }, { merge: true });
             console.log("High score updated in Firestore:", state.score);
         } catch (e) {
@@ -749,10 +729,19 @@
     // --- Initialization ---
 
     document.addEventListener('DOMContentLoaded', function () {
-      setupFirebase();
+      // 1. Initial size calculation
+      resize();
+      
+      // 2. Initialize Player (critical fix)
       state.player = new Player();
+      
+      // 3. Setup Firebase for score persistence
+      setupFirebase();
+
+      // 4. Show initial modal
       showModal('Welcome to Bubble Pop Extreme!! ✨', 'Collect stars and power-ups while dodging the purple bubbles. Get ready to tap and swipe your way to a high score!', 'Start Game', startGame);
     });
+
   </script>
 </body>
 </html>
